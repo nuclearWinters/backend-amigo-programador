@@ -1,36 +1,38 @@
 import { GraphQLString } from "graphql";
 import { GraphQLUser } from "../Nodes";
-import { RootUser, DecodeJWT, Context } from "../Database";
-import jwt from "jsonwebtoken";
+import { RootUser, Context } from "../Database";
 import { ObjectID } from "mongodb";
+import { refreshTokenMiddleware } from "../Mutation/refreshTokenMiddleware";
 
 const UserQuery = {
   type: GraphQLUser,
   args: {
     id: { type: GraphQLString },
+    refreshToken: { type: GraphQLString },
   },
   resolve: async (
     _: any,
-    { id }: any,
-    { usuarios, token }: Context
+    { id, refreshToken }: any,
+    { usuarios, accessToken }: Context
   ): Promise<RootUser> => {
     try {
-      if (!id) throw new Error("No ingreso un usuario");
-      if (!token) throw new Error("El usuario no tiene cuenta.");
-      const decoded = jwt.decode(token);
-      if (id !== (decoded as DecodeJWT).id)
-        throw new Error("El usuario no es el mismo que esta autenticado");
+      if (!accessToken || !refreshToken)
+        throw new Error("El usuario no tiene credenciales.");
+      const { validAccessToken, _id } = await refreshTokenMiddleware(
+        accessToken,
+        refreshToken
+      );
       const user = await usuarios.findOne({
-        _id: new ObjectID(id),
+        _id: new ObjectID(_id),
       });
       if (!user) throw new Error("El usuario no existe.");
-      jwt.verify(token, user.password);
       return {
         id: user._id.toHexString(),
         name: user.name,
         email: user.email,
         topic: user.topic,
         module: user.module,
+        modules: user.modules,
       };
     } catch (e) {
       const user = {
@@ -39,6 +41,16 @@ const UserQuery = {
         email: "",
         topic: 0,
         module: 0,
+        modules: {
+          QuickStart: 0,
+          HTML: 0,
+          CSS: 0,
+          Javascript: 0,
+          React: 0,
+          Node: 0,
+          Express: 0,
+          MongoDB: 0,
+        },
       };
       return user;
     }

@@ -1,32 +1,77 @@
-import { GraphQLInt, GraphQLNonNull } from "graphql";
-import jwt from "jsonwebtoken";
-import { Context, DecodeJWT } from "../Database";
+import { mutationWithClientMutationId } from "graphql-relay";
+import { GraphQLInt, GraphQLNonNull, GraphQLString } from "graphql";
+import { Context } from "../Database";
 import { ObjectID } from "mongodb";
+import { refreshTokenMiddleware } from "../Mutation/refreshTokenMiddleware";
 
-const UpdateCurrentTopic = {
-  type: GraphQLNonNull(GraphQLInt),
-  description: "Crear un usuario y obtener un JWT",
-  args: {
-    index: { type: GraphQLNonNull(GraphQLInt) },
-  },
-  resolve: async (_: any, { index }: any, { usuarios, token }: Context) => {
-    try {
-      if (!token) throw new Error("El usuario no tiene cuenta.");
-      const decoded = jwt.decode(token);
-      const user = await usuarios.findOne({
-        _id: new ObjectID((decoded as DecodeJWT).id),
-      });
-      if (!user) throw new Error("El usuario no existe.");
-      jwt.verify(token, user.password);
-      usuarios.findOneAndUpdate(
-        { _id: new ObjectID((decoded as DecodeJWT).id) },
-        { $set: { module: index } }
-      );
-      return index;
-    } catch (e) {
-      return index;
-    }
-  },
+type Input = {
+  topicIndex: number;
+  name:
+    | "QuickStart"
+    | "HTML"
+    | "CSS"
+    | "Javascript"
+    | "React"
+    | "Node"
+    | "Express"
+    | "MongoDB";
+  moduleIndex: number;
+  refreshToken: string;
 };
 
-export default UpdateCurrentTopic;
+type Payload = {
+  module: number;
+  error?: string;
+  accessToken?: string;
+};
+
+const UpdateCurrentModuleMutation = mutationWithClientMutationId({
+  name: "updateCurrentModule",
+  description: "Cambia el modulo inicial de cada tema",
+  inputFields: {
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    moduleIndex: { type: new GraphQLNonNull(GraphQLInt) },
+    refreshToken: { type: GraphQLNonNull(GraphQLString) },
+  },
+  outputFields: {
+    error: {
+      type: GraphQLString,
+      resolve: ({ error }: Payload): string | null => (error ? error : null),
+    },
+    module: {
+      type: new GraphQLNonNull(GraphQLInt),
+      resolve: ({ module }: Payload): number => module,
+    },
+    accessToken: {
+      type: GraphQLString,
+      resolve: ({ accessToken }: Payload): string | null => accessToken || null,
+    },
+  },
+  mutateAndGetPayload: async (
+    { name, moduleIndex, refreshToken }: Input,
+    { usuarios, accessToken }: Context
+  ): Promise<Payload> => {
+    try {
+      if (!accessToken || !refreshToken)
+        throw new Error("El usuario no tiene credenciales.");
+      const { validAccessToken, _id } = await refreshTokenMiddleware(
+        accessToken,
+        refreshToken
+      );
+      const { value } = await usuarios.findOneAndUpdate(
+        { _id: new ObjectID(_id) },
+        { $set: { [`modules.${name}`]: moduleIndex } }
+      );
+      if (value === undefined)
+        throw new Error("El usuario no tiene propiedades.");
+      const { topic, modules } = value;
+      if (topic === undefined || modules === undefined)
+        throw new Error("El usuario no tiene topic o modules.");
+      return { module: moduleIndex, accessToken: validAccessToken };
+    } catch (e) {
+      return { module: moduleIndex, error: e.message };
+    }
+  },
+});
+
+export { UpdateCurrentModuleMutation };

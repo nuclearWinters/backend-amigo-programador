@@ -8,12 +8,12 @@ import { UserQuery } from "./Query/User";
 import { AddCommentMutation } from "./Mutation/AddComment";
 import { AddCommentOnCommentMutation } from "./Mutation/AddCommentOnComment";
 //import { AddHomeworkMutation } from "./Mutation/AddHomework";
-import { MongoClient } from "mongodb";
+import { MongoClient, Db } from "mongodb";
 import { UserDB, CommentsDB, TopicDB, Context } from "./Database";
-import SingUpMutation from "./Mutation/SignUp";
-import SingInMutation from "./Mutation/SignIn";
-import UpdateCurrentModuleMutation from "./Mutation/UpdateCurrentModule";
-import UpdateCurrentTopicMutation from "./Mutation/UpdateCurrentTopic";
+import { SignUpMutation } from "./Mutation/SignUp";
+import { SignInMutation } from "./Mutation/SignIn";
+import { UpdateCurrentTopicMutation } from "./Mutation/UpdateCurrentTopic";
+import { UpdateCurrentModuleMutation } from "./Mutation/UpdateCurrentModule";
 
 const Query = new GraphQLObjectType({
   name: "Query",
@@ -26,12 +26,12 @@ const Query = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
   name: "Mutation",
   fields: {
-    SignIn: SingInMutation,
-    SignUp: SingUpMutation,
+    signIn: SignInMutation,
+    signUp: SignUpMutation,
     addComment: AddCommentMutation,
     addCommentOnComment: AddCommentOnCommentMutation,
+    updateCurrentTopic: UpdateCurrentTopicMutation,
     updateCurrentModule: UpdateCurrentModuleMutation,
-    UpdateCurrentTopic: UpdateCurrentTopicMutation,
   },
 });
 
@@ -46,36 +46,36 @@ app.use(cors());
 
 const menuOptions = { useNewUrlParser: true, useUnifiedTopology: true };
 
-const mongodb = MongoClient.connect(ATLAS_CONFIG || "", menuOptions);
-
 app.use(
   "/graphql",
-  graphqlHTTP(
-    async (
-      res
-    ): Promise<{
-      schema: GraphQLSchema;
-      graphiql: true;
-      context: Context;
-    }> => {
-      const db = (await mongodb).db("amigo_programador");
-      const usuarios = db.collection<UserDB>("usuarios");
-      const comentarios = db.collection<CommentsDB>("comentarios");
-      const arbol = db.collection<TopicDB>("arbo_tecnologicol");
-      return {
-        schema: schema,
-        graphiql: true,
-        context: {
-          usuarios,
-          comentarios,
-          arbol,
-          token: res.headers.authorization ? res.headers.authorization : "",
-        },
-      };
-    }
-  )
+  graphqlHTTP((req: any): {
+    context: Context;
+    schema: GraphQLSchema;
+    graphiql: boolean;
+  } => {
+    const db = req.app.locals.db as Db;
+    const usuarios = db.collection<UserDB>("usuarios");
+    const comentarios = db.collection<CommentsDB>("comentarios");
+    const arbol = db.collection<TopicDB>("arbo_tecnologicol");
+    return {
+      schema: schema,
+      graphiql: true,
+      context: {
+        usuarios,
+        comentarios,
+        arbol,
+        accessToken: req.headers.authorization,
+      },
+    };
+  })
 );
 
-app.listen(process.env.PORT || 4000, () => {
-  console.log("Running a GraphQL API server at http://localhost:4000/graphql");
+MongoClient.connect(ATLAS_CONFIG, menuOptions).then((client) => {
+  const db = client.db("amigo_programador");
+  app.locals.db = db;
+  app.listen(process.env.PORT || 4000, () => {
+    console.log(
+      `Running a GraphQL API server at http://localhost:4000/graphql`
+    );
+  });
 });

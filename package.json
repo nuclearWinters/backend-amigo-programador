@@ -5,11 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsc-watch --onSuccess \"node dist/index.js\"",
-    "start": "npm run serve",
-    "build": "npm run build-ts",
-    "serve": "node dist/index.js",
-    "build-ts": "tsc"
+    "dev": "ts-node-dev ./src/index.ts",
+    "build": "npx tsc",
+    "serve": "node ./dist/index.js",
+    "start": "npm run build && npm run serve"
   },
   "author": "Armando Rueda",
   "license": "ISC",
@@ -22,10 +21,7 @@
     "@types/graphql-relay": "^0.6.0",
     "@types/graphql-upload": "^8.0.3",
     "@types/jsonwebtoken": "^8.5.0",
-    "@types/lodash": "^4.14.155",
     "@types/mongodb": "^3.5.23",
-    "@types/mongoose": "^5.7.29",
-    "@types/multer": "^1.4.3",
     "@types/uuid": "^7.0.3",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
@@ -35,18 +31,13 @@
     "express-graphql": "^0.9.0",
     "graphql": "^15.0.0",
     "graphql-relay": "^0.6.0",
-    "graphql-upload": "^10.0.0",
     "jsonwebtoken": "^8.5.1",
-    "load-script": "^1.0.0",
-    "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "mongodb": "^3.5.9",
-    "mongoose": "^5.9.21",
-    "multer": "^1.4.2",
-    "sanitize-filename": "^1.6.3",
     "uuid": "^7.0.3"
   },
   "devDependencies": {
+    "ts-node-dev": "^1.0.0",
     "tsc-watch": "^4.2.3",
     "typescript": "^3.8.3"
   }

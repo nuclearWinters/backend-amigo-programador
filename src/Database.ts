@@ -84,7 +84,7 @@ export interface Context {
   usuarios: Collection<UserDB>;
   comentarios: Collection<CommentsDB>;
   arbol: Collection<TopicDB>;
-  token: string;
+  accessToken?: string;
 }
 
 export interface TopicDB {
@@ -102,6 +102,7 @@ export interface RootUser {
   email: string;
   topic: number;
   module: number;
+  modules: ModulesDB;
 }
 
 export interface UserDB {
@@ -111,10 +112,22 @@ export interface UserDB {
   email: string;
   topic: number;
   module: number;
+  modules: ModulesDB;
 }
 
 export interface DecodeJWT {
-  id: string;
+  _id: string;
+}
+
+export interface ModulesDB {
+  QuickStart: number;
+  HTML: number;
+  CSS: number;
+  Javascript: number;
+  React: number;
+  Node: number;
+  Express: number;
+  MongoDB: number;
 }
 
 const fakeDatabaseQuery = [

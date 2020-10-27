@@ -24,6 +24,7 @@ import {
   ModuleDB,
   TopicDB,
   Context,
+  ModulesDB,
 } from "./Database";
 
 const { nodeInterface, nodeField } = nodeDefinitions(
@@ -289,6 +290,46 @@ const {
   nodeType: GraphQLTopic,
 });
 
+const GraphQLModules = new GraphQLObjectType<ModulesDB>({
+  name: "Modules",
+  fields: {
+    id: globalIdField("Modules"),
+    QuickStart: {
+      type: new GraphQLNonNull(GraphQLInt),
+      resolve: ({ QuickStart }): number => QuickStart,
+    },
+    HTML: {
+      type: new GraphQLNonNull(GraphQLInt),
+      resolve: ({ HTML }): number => HTML,
+    },
+    CSS: {
+      type: new GraphQLNonNull(GraphQLInt),
+      resolve: ({ CSS }): number => CSS,
+    },
+    Javascript: {
+      type: new GraphQLNonNull(GraphQLInt),
+      resolve: ({ Javascript }): number => Javascript,
+    },
+    React: {
+      type: new GraphQLNonNull(GraphQLInt),
+      resolve: ({ React }): number => React,
+    },
+    Node: {
+      type: new GraphQLNonNull(GraphQLInt),
+      resolve: ({ Node }): number => Node,
+    },
+    Express: {
+      type: new GraphQLNonNull(GraphQLInt),
+      resolve: ({ Express }): number => Express,
+    },
+    MongoDB: {
+      type: new GraphQLNonNull(GraphQLInt),
+      resolve: ({ MongoDB }): number => MongoDB,
+    },
+  },
+  interfaces: [nodeInterface],
+});
+
 const GraphQLUser = new GraphQLObjectType<RootUser, Context>({
   name: "User",
   fields: {
@@ -332,6 +373,12 @@ const GraphQLUser = new GraphQLObjectType<RootUser, Context>({
       type: new GraphQLNonNull(GraphQLInt),
       resolve: ({ module }): number => {
         return module;
+      },
+    },
+    currentModules: {
+      type: new GraphQLNonNull(GraphQLModules),
+      resolve: ({ modules }): ModulesDB => {
+        return modules;
       },
     },
   },
