@@ -40,10 +40,6 @@ const { nodeInterface, nodeField } = nodeDefinitions(
         return GraphQLComment;
       case "CommentOnComment":
         return GraphQLCommentOnComment;
-      case "Topics":
-        return GraphQLTopic;
-      case "Module":
-        return GraphQLModule;
       default:
         return null;
     }
@@ -192,103 +188,13 @@ const GraphQLComment = new GraphQLObjectType<CommentDB>({
   interfaces: [nodeInterface],
 });
 
-const {
+/*const {
   connectionType: CommentsConnection,
   edgeType: GraphQLCommentEdge,
 } = connectionDefinitions({
   name: "Comment",
   nodeType: GraphQLComment,
-});
-
-const GraphQLModule = new GraphQLObjectType<ModuleDB, Context>({
-  name: "Module",
-  fields: {
-    id: globalIdField("Module"),
-    title: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: ({ title }): string => title,
-    },
-    description: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: ({ description }): string => description,
-    },
-    thumbnail: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: ({ thumbnail }): string => thumbnail,
-    },
-    comments: {
-      type: new GraphQLNonNull(CommentsConnection),
-      args: {
-        ...connectionArgs,
-      },
-      resolve: async ({ comments }, args, { comentarios }) => {
-        const commentsEmbedded = await comentarios.findOne({ _id: comments });
-        return connectionFromArray(
-          commentsEmbedded
-            ? commentsEmbedded.allComments.map((item) => ({
-                ...item,
-                id: item._id.toHexString(),
-              }))
-            : [],
-          args
-        );
-      },
-    },
-  },
-  interfaces: [nodeInterface],
-});
-
-const {
-  connectionType: ModulesConnection,
-  edgeType: GraphQLModulesEdge,
-} = connectionDefinitions({
-  name: "Module",
-  nodeType: GraphQLModule,
-});
-
-const GraphQLTopic = new GraphQLObjectType<TopicDB>({
-  name: "Topic",
-  fields: {
-    id: globalIdField("Topic"),
-    step: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: ({ step }): number => step,
-    },
-    name: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: ({ name }): string => name,
-    },
-    url: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: ({ url }): string => url,
-    },
-    type: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: ({ type }): string => type,
-    },
-    modules: {
-      type: new GraphQLNonNull(ModulesConnection),
-      args: {
-        ...connectionArgs,
-      },
-      resolve: ({ modules }, args) => {
-        return connectionFromArray(
-          modules.map((item) => ({ ...item, id: item._id.toHexString() })),
-          args
-        );
-      },
-    },
-  },
-  interfaces: [nodeInterface],
-});
-
-const {
-  connectionType: TopicsConnection,
-  edgeType: GraphQLTopicEdge,
-} = connectionDefinitions({
-  name: "Topic",
-  nodeType: GraphQLTopic,
-});
+});*/
 
 const GraphQLModules = new GraphQLObjectType<ModulesDB>({
   name: "Modules",
@@ -334,45 +240,14 @@ const GraphQLUser = new GraphQLObjectType<RootUser, Context>({
   name: "User",
   fields: {
     id: globalIdField("User"),
-    name: {
+    username: {
       type: new GraphQLNonNull(GraphQLString),
-      resolve: ({ name }): string => name,
-    },
-    topics: {
-      type: new GraphQLNonNull(TopicsConnection),
-      args: {
-        ...connectionArgs,
-      },
-      resolve: async (
-        _,
-        { first, after, last, before }: ConnectionArguments,
-        { arbol }
-      ) => {
-        if (first || after || last || before) {
-          const topicsDB = await arbol.find().toArray();
-          const argsMock: ConnectionArguments = {};
-          return connectionFromArray(
-            topicsDB.map((item) => ({ ...item, id: item._id.toHexString() })),
-            argsMock
-          );
-        }
-        const topics = await arbol.find().toArray();
-        return connectionFromArray(
-          topics.map((item) => ({ ...item, id: item._id.toHexString() })),
-          { first, after, last, before }
-        );
-      },
+      resolve: ({ username }): string => username,
     },
     currentTopic: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: ({ topic }): number => {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: ({ topic }): string => {
         return topic;
-      },
-    },
-    currentModule: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: ({ module }): number => {
-        return module;
       },
     },
     currentModules: {
@@ -388,11 +263,11 @@ const GraphQLUser = new GraphQLObjectType<RootUser, Context>({
 export {
   nodeField,
   GraphQLComment,
-  GraphQLCommentEdge,
+  //GraphQLCommentEdge,
   GraphQLUser,
   GraphQLCommentOnComment,
   GraphQLCommentOnCommentEdge,
   //GraphQLHomework,
   //GraphQLHomeworkEdge,
-  GraphQLTopicEdge,
+  //GraphQLTopicEdge,
 };

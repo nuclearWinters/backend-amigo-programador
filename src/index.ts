@@ -5,7 +5,7 @@ import cors from "cors";
 import { ATLAS_CONFIG } from "./config";
 import { nodeField } from "./Nodes";
 import { UserQuery } from "./Query/User";
-import { AddCommentMutation } from "./Mutation/AddComment";
+//import { AddCommentMutation } from "./Mutation/AddComment";
 import { AddCommentOnCommentMutation } from "./Mutation/AddCommentOnComment";
 //import { AddHomeworkMutation } from "./Mutation/AddHomework";
 import { MongoClient, Db } from "mongodb";
@@ -28,7 +28,7 @@ const Mutation = new GraphQLObjectType({
   fields: {
     signIn: SignInMutation,
     signUp: SignUpMutation,
-    addComment: AddCommentMutation,
+    //addComment: AddCommentMutation,
     addCommentOnComment: AddCommentOnCommentMutation,
     updateCurrentTopic: UpdateCurrentTopicMutation,
     updateCurrentModule: UpdateCurrentModuleMutation,

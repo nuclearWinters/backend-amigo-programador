@@ -1,25 +1,25 @@
 import { mutationWithClientMutationId } from "graphql-relay";
-import { GraphQLNonNull, GraphQLString, GraphQLInt } from "graphql";
+import { GraphQLNonNull, GraphQLString } from "graphql";
 import { Context } from "../Database";
 import { ObjectID } from "mongodb";
 import { refreshTokenMiddleware } from "./refreshTokenMiddleware";
 
 interface Input {
-  index: number;
+  topic: string;
   refreshToken: string;
 }
 
 type Payload = {
-  topicIndex: number;
+  topic: string;
   error?: string;
   accessToken?: string;
 };
 
 const UpdateCurrentTopicMutation = mutationWithClientMutationId({
-  name: "updateCurrentTopic",
+  name: "UpdateCurrentTopic",
   description: "Cambia el tema en curso del usuario.",
   inputFields: {
-    index: { type: GraphQLNonNull(GraphQLInt) },
+    topic: { type: GraphQLNonNull(GraphQLString) },
     refreshToken: { type: GraphQLNonNull(GraphQLString) },
   },
   outputFields: {
@@ -28,8 +28,8 @@ const UpdateCurrentTopicMutation = mutationWithClientMutationId({
       resolve: ({ error }: Payload): string | null => error || null,
     },
     topic: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: ({ topicIndex }: Payload): number => topicIndex,
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: ({ topic }: Payload): string => topic,
     },
     accessToken: {
       type: GraphQLString,
@@ -37,7 +37,7 @@ const UpdateCurrentTopicMutation = mutationWithClientMutationId({
     },
   },
   mutateAndGetPayload: async (
-    { index, refreshToken }: Input,
+    { topic, refreshToken }: Input,
     { accessToken, usuarios }: Context
   ): Promise<Payload> => {
     try {
@@ -47,13 +47,13 @@ const UpdateCurrentTopicMutation = mutationWithClientMutationId({
         accessToken,
         refreshToken
       );
-      usuarios.findOneAndUpdate(
+      await usuarios.findOneAndUpdate(
         { _id: new ObjectID(_id) },
-        { $set: { topic: index } }
+        { $set: { topic } }
       );
-      return { topicIndex: index, accessToken: validAccessToken };
+      return { topic, accessToken: validAccessToken };
     } catch (e) {
-      return { topicIndex: index, error: e.message };
+      return { topic, error: e.message };
     }
   },
 });

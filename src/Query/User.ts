@@ -28,19 +28,17 @@ const UserQuery = {
       if (!user) throw new Error("El usuario no existe.");
       return {
         id: user._id.toHexString(),
-        name: user.name,
+        username: user.username,
         email: user.email,
         topic: user.topic,
-        module: user.module,
         modules: user.modules,
       };
     } catch (e) {
       const user = {
         id: "",
-        name: "",
+        username: "",
         email: "",
-        topic: 0,
-        module: 0,
+        topic: "QuickStart",
         modules: {
           QuickStart: 0,
           HTML: 0,

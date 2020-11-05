@@ -4,7 +4,7 @@ import {
 } from "graphql-relay";
 import uuid from "uuid/v4";
 import { GraphQLNonNull, GraphQLString } from "graphql";
-import { GraphQLCommentEdge } from "../Nodes";
+/*import { GraphQLCommentEdge } from "../Nodes";
 
 import { fakeDatabaseQuery } from "../Database";
 
@@ -52,4 +52,4 @@ const AddCommentMutation = mutationWithClientMutationId({
   },
 });
 
-export { AddCommentMutation };
+export { AddCommentMutation };*/

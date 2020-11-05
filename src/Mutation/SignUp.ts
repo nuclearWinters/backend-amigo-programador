@@ -8,7 +8,7 @@ import { sgMail } from "./SEND_GRID";
 import { ObjectID } from "mongodb";
 
 interface Input {
-  name: string;
+  username: string;
   email: string;
   password: string;
 }
@@ -20,11 +20,11 @@ type Payload = {
 };
 
 const SignUpMutation = mutationWithClientMutationId({
-  name: "signUp",
+  name: "SignUp",
   description:
     "Registra un nuevo usuario y obtén un Refresh Token y un AccessToken.",
   inputFields: {
-    name: { type: GraphQLNonNull(GraphQLString) },
+    username: { type: GraphQLNonNull(GraphQLString) },
     password: { type: GraphQLNonNull(GraphQLString) },
     email: { type: GraphQLNonNull(GraphQLString) },
   },
@@ -43,7 +43,7 @@ const SignUpMutation = mutationWithClientMutationId({
     },
   },
   mutateAndGetPayload: async (
-    { email, password, name }: Input,
+    { email, password, username }: Input,
     { usuarios }: Context
   ): Promise<Payload> => {
     try {
@@ -53,11 +53,10 @@ const SignUpMutation = mutationWithClientMutationId({
       const _id = new ObjectID();
       await usuarios.insertOne({
         _id,
-        name,
+        username,
         email,
         password: hash_password,
-        topic: 0,
-        module: 0,
+        topic: "QuickStart",
         modules: {
           QuickStart: 0,
           HTML: 0,

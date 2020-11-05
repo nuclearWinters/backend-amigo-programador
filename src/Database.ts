@@ -98,20 +98,18 @@ export interface TopicDB {
 
 export interface RootUser {
   id: string;
-  name: string;
+  username: string;
   email: string;
-  topic: number;
-  module: number;
+  topic: string;
   modules: ModulesDB;
 }
 
 export interface UserDB {
   _id: ObjectId;
-  name: string;
+  username: string;
   password: string;
   email: string;
-  topic: number;
-  module: number;
+  topic: string;
   modules: ModulesDB;
 }
 

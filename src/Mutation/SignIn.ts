@@ -17,7 +17,7 @@ type Payload = {
 };
 
 const SignInMutation = mutationWithClientMutationId({
-  name: "signIn",
+  name: "SignIn",
   description: "Obtén un Refresh Token y un AccessToken.",
   inputFields: {
     email: { type: GraphQLNonNull(GraphQLString) },

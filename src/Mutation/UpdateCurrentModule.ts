@@ -26,7 +26,7 @@ type Payload = {
 };
 
 const UpdateCurrentModuleMutation = mutationWithClientMutationId({
-  name: "updateCurrentModule",
+  name: "UpdateCurrentModule",
   description: "Cambia el modulo inicial de cada tema",
   inputFields: {
     name: { type: new GraphQLNonNull(GraphQLString) },
