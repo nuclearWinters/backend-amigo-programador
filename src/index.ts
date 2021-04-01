@@ -6,10 +6,10 @@ import { ATLAS_CONFIG } from "./config";
 import { nodeField } from "./Nodes";
 import { UserQuery } from "./Query/User";
 //import { AddCommentMutation } from "./Mutation/AddComment";
-import { AddCommentOnCommentMutation } from "./Mutation/AddCommentOnComment";
+//import { AddCommentOnCommentMutation } from "./Mutation/AddCommentOnComment";
 //import { AddHomeworkMutation } from "./Mutation/AddHomework";
 import { MongoClient, Db } from "mongodb";
-import { UserDB, CommentsDB, TopicDB, Context } from "./Database";
+import { UserDB, CommentsDB, Context } from "./Database";
 import { SignUpMutation } from "./Mutation/SignUp";
 import { SignInMutation } from "./Mutation/SignIn";
 import { UpdateCurrentTopicMutation } from "./Mutation/UpdateCurrentTopic";
@@ -29,7 +29,7 @@ const Mutation = new GraphQLObjectType({
     signIn: SignInMutation,
     signUp: SignUpMutation,
     //addComment: AddCommentMutation,
-    addCommentOnComment: AddCommentOnCommentMutation,
+    //addCommentOnComment: AddCommentOnCommentMutation,
     updateCurrentTopic: UpdateCurrentTopicMutation,
     updateCurrentModule: UpdateCurrentModuleMutation,
   },
@@ -56,14 +56,12 @@ app.use(
     const db = req.app.locals.db as Db;
     const usuarios = db.collection<UserDB>("usuarios");
     const comentarios = db.collection<CommentsDB>("comentarios");
-    const arbol = db.collection<TopicDB>("arbo_tecnologicol");
     return {
       schema: schema,
       graphiql: true,
       context: {
         usuarios,
         comentarios,
-        arbol,
         accessToken: req.headers.authorization,
       },
     };

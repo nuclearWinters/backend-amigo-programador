@@ -4,6 +4,7 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLString,
+  GraphQLList,
 } from "graphql";
 
 import {
@@ -19,13 +20,13 @@ import {
 import {
   CommentDB,
   RootUser,
-  CommentOnComment,
-  fakeDatabaseQueryLikedComments,
   ModuleDB,
-  TopicDB,
   Context,
   ModulesDB,
+  TopicsDB,
 } from "./Database";
+
+import { topicsAndModules, commentsHC } from "./Data";
 
 const { nodeInterface, nodeField } = nodeDefinitions(
   (globalId) => {
@@ -38,15 +39,15 @@ const { nodeInterface, nodeField } = nodeDefinitions(
         return GraphQLUser;
       case "Comment":
         return GraphQLComment;
-      case "CommentOnComment":
-        return GraphQLCommentOnComment;
+      case "Module":
+        return GraphQLModule;
       default:
         return null;
     }
   }
 );
 
-const GraphQLCommentOnComment = new GraphQLObjectType({
+/*const GraphQLCommentOnComment = new GraphQLObjectType({
   name: "CommentOnComment",
   fields: {
     id: globalIdField("CommentOnComment"),
@@ -83,15 +84,15 @@ const GraphQLCommentOnComment = new GraphQLObjectType({
     },
   },
   interfaces: [nodeInterface],
-});
+});*/
 
-const {
+/*const {
   connectionType: CommentsOnCommentsConnection,
   edgeType: GraphQLCommentOnCommentEdge,
 } = connectionDefinitions({
   name: "CommentOnComment",
   nodeType: GraphQLCommentOnComment,
-});
+});*/
 
 /*const GraphQLComment = new GraphQLObjectType({
   name: "Comment",
@@ -173,33 +174,21 @@ const GraphQLComment = new GraphQLObjectType<CommentDB>({
       type: new GraphQLNonNull(GraphQLInt),
       resolve: ({ totalSubcomments }): number => totalSubcomments,
     },
-    /*liked: {
-      type: new GraphQLNonNull(GraphQLBoolean),
-      resolve: (comment: Comment) => {
-        return Boolean(
-          fakeDatabaseQueryLikedComments.find(
-            (item) =>
-              item.idComment === comment.id && item.name === "Armando Rueda"
-          )
-        );
-      },
-    },*/
   },
   interfaces: [nodeInterface],
 });
 
-/*const {
+const {
   connectionType: CommentsConnection,
   edgeType: GraphQLCommentEdge,
 } = connectionDefinitions({
   name: "Comment",
   nodeType: GraphQLComment,
-});*/
+});
 
 const GraphQLModules = new GraphQLObjectType<ModulesDB>({
   name: "Modules",
   fields: {
-    id: globalIdField("Modules"),
     QuickStart: {
       type: new GraphQLNonNull(GraphQLInt),
       resolve: ({ QuickStart }): number => QuickStart,
@@ -233,13 +222,112 @@ const GraphQLModules = new GraphQLObjectType<ModulesDB>({
       resolve: ({ MongoDB }): number => MongoDB,
     },
   },
+});
+
+const GraphQLModule = new GraphQLObjectType<ModuleDB>({
+  name: "Module",
+  fields: {
+    id: globalIdField("Module"),
+    title: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: ({ title }): string => title,
+    },
+    description: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: ({ description }): string => description,
+    },
+    thumbnail: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: ({ thumbnail }): string => thumbnail,
+    },
+    comments: {
+      type: new GraphQLNonNull(CommentsConnection),
+      args: {
+        ...connectionArgs,
+        refreshToken: { type: GraphQLString },
+      },
+      resolve: async (
+        { comments },
+        args: ConnectionArguments,
+        { comentarios }
+      ) => {
+        console.log(args.first);
+        console.log(args.last);
+        console.log(args.after);
+        console.log(args.before);
+        if (args.first === 0) {
+          return connectionFromArray<CommentDB>(comments, args);
+        } else {
+          return connectionFromArray<any>(commentsHC, args);
+        }
+      },
+    },
+  },
   interfaces: [nodeInterface],
+});
+
+const GraphQLTopics = new GraphQLObjectType<TopicsDB>({
+  name: "Topics",
+  fields: {
+    QuickStart: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLModule))
+      ),
+      resolve: ({ QuickStart }): ModuleDB[] => QuickStart,
+    },
+    HTML: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLModule))
+      ),
+      resolve: ({ HTML }): ModuleDB[] => HTML,
+    },
+    CSS: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLModule))
+      ),
+      resolve: ({ CSS }): ModuleDB[] => CSS,
+    },
+    Javascript: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLModule))
+      ),
+      resolve: ({ Javascript }): ModuleDB[] => Javascript,
+    },
+    React: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLModule))
+      ),
+      resolve: ({ React }): ModuleDB[] => React,
+    },
+    Node: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLModule))
+      ),
+      resolve: ({ Node }): ModuleDB[] => Node,
+    },
+    Express: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLModule))
+      ),
+      resolve: ({ Express }): ModuleDB[] => Express,
+    },
+    MongoDB: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLModule))
+      ),
+      resolve: ({ MongoDB }): ModuleDB[] => MongoDB,
+    },
+  },
 });
 
 const GraphQLUser = new GraphQLObjectType<RootUser, Context>({
   name: "User",
   fields: {
     id: globalIdField("User"),
+    topics: {
+      type: new GraphQLNonNull(GraphQLTopics),
+      resolve: (): TopicsDB => topicsAndModules,
+    },
     username: {
       type: new GraphQLNonNull(GraphQLString),
       resolve: ({ username }): string => username,
@@ -260,14 +348,4 @@ const GraphQLUser = new GraphQLObjectType<RootUser, Context>({
   interfaces: [nodeInterface],
 });
 
-export {
-  nodeField,
-  GraphQLComment,
-  //GraphQLCommentEdge,
-  GraphQLUser,
-  GraphQLCommentOnComment,
-  GraphQLCommentOnCommentEdge,
-  //GraphQLHomework,
-  //GraphQLHomeworkEdge,
-  //GraphQLTopicEdge,
-};
+export { nodeField, GraphQLComment, GraphQLUser };
